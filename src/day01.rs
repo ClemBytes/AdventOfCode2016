@@ -153,7 +153,7 @@ fn day01_part1(input: &Vec<Instruction>) {
     assert_eq!(blocks_away(&ex), 12);
 
     // Solve puzzle
-    let res = blocks_away(&input);
+    let res = blocks_away(input);
     println!("Result part 1: {res}");
     assert_eq!(res, 300);
     println!("> DAY01 - part 1: OK!");
