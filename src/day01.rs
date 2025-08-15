@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashSet, fs};
 
 #[test]
 fn test() {
@@ -48,6 +48,7 @@ fn parse(raw_input: &str) -> Vec<Instruction> {
     instructions
 }
 
+#[derive(Eq, Hash, PartialEq, Copy, Clone, Debug)]
 enum Facing {
     North,
     South,
@@ -55,6 +56,7 @@ enum Facing {
     West,
 }
 
+#[derive(Eq, Hash, PartialEq, Copy, Clone, Debug)]
 struct State {
     facing: Facing,
     n_s_coord: i32,
@@ -159,14 +161,54 @@ fn day01_part1(input: &Vec<Instruction>) {
     println!("> DAY01 - part 1: OK!");
 }
 
-fn day01_part2(_input: &Vec<Instruction>) {
-    println!("TODO - part2");
+fn visit_twice(instructions: &Vec<Instruction>) -> i32 {
+    let mut visited_states: HashSet<(i32, i32)> = HashSet::new();
+
+    let mut state = State {
+        facing: Facing::North,
+        n_s_coord: 0,
+        e_w_coord: 0,
+    };
+    visited_states.insert((state.n_s_coord, state.e_w_coord));
+
+    for instruction in instructions {
+        state.turn(instruction.turn);
+        for _ in 0..instruction.nb_blocks {
+            state.walk(1);
+            if visited_states.contains(&(state.n_s_coord, state.e_w_coord)) {
+                return state.n_s_coord.abs() + state.e_w_coord.abs();
+            }
+            visited_states.insert((state.n_s_coord, state.e_w_coord));
+        }
+    }
+    unreachable!();
+}
+
+fn day01_part2(input: &Vec<Instruction>) {
     // Exemple tests
-    // assert_eq!(, 0);
+    let ex: Vec<Instruction> = vec![
+        Instruction {
+            turn: Turn::R,
+            nb_blocks: 8,
+        },
+        Instruction {
+            turn: Turn::R,
+            nb_blocks: 4,
+        },
+        Instruction {
+            turn: Turn::R,
+            nb_blocks: 4,
+        },
+        Instruction {
+            turn: Turn::R,
+            nb_blocks: 8,
+        },
+    ];
+    assert_eq!(visit_twice(&ex), 4);
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY01 - part 2: OK!");
+    let res = visit_twice(input);
+    println!("Result part 2: {res}");
+    assert_eq!(res, 159);
+    println!("> DAY01 - part 2: OK!");
 }
