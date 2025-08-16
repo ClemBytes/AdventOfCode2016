@@ -103,9 +103,83 @@ impl Instruction {
             other => panic!("Unknown digit: {other}. Should be 1, 2, 3, 4, 5, 6, 7, 8, or 9"),
         }
     }
+
+    fn next_character(&self, current_character: char) -> char {
+        match current_character {
+            '1' => match self {
+                Instruction::Down => '3',
+                _ => '1',
+            },
+            '2' => match self {
+                Instruction::Down => '6',
+                Instruction::Right => '3',
+                _ => '2',
+            },
+            '3' => match self {
+                Instruction::Up => '1',
+                Instruction::Down => '7',
+                Instruction::Left => '2',
+                Instruction::Right => '4',
+            },
+            '4' => match self {
+                Instruction::Down => '8',
+                Instruction::Left => '3',
+                _ => '4',
+            },
+            '5' => match self {
+                Instruction::Right => '6',
+                _ => '5',
+            },
+            '6' => match self {
+                Instruction::Up => '2',
+                Instruction::Down => 'A',
+                Instruction::Left => '5',
+                Instruction::Right => '7',
+            },
+            '7' => match self {
+                Instruction::Up => '3',
+                Instruction::Down => 'B',
+                Instruction::Left => '6',
+                Instruction::Right => '8',
+            },
+            '8' => match self {
+                Instruction::Up => '4',
+                Instruction::Down => 'C',
+                Instruction::Left => '7',
+                Instruction::Right => '9',
+            },
+            '9' => match self {
+                Instruction::Left => '8',
+                _ => '9',
+            },
+            'A' => match self {
+                Instruction::Up => '6',
+                Instruction::Right => 'B',
+                _ => 'A',
+            },
+            'B' => match self {
+                Instruction::Up => '7',
+                Instruction::Down => 'D',
+                Instruction::Left => 'A',
+                Instruction::Right => 'C',
+            },
+            'C' => match self {
+                Instruction::Up => '8',
+                Instruction::Left => 'B',
+                _ => 'C',
+            },
+            'D' => match self {
+                Instruction::Up => 'B',
+                _ => 'D',
+            },
+            other => panic!(
+                "Unknown character: {other}. Should be 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C or D"
+            ),
+        }
+    }
 }
 
-fn code(instructions_list: &[Vec<Instruction>], start_digit: u32) -> u32 {
+fn code_part1(instructions_list: &[Vec<Instruction>], start_digit: u32) -> u32 {
     let mut current_digit = start_digit;
     let mut res = 0;
     let nb_digits = instructions_list.len() as u32;
@@ -118,25 +192,36 @@ fn code(instructions_list: &[Vec<Instruction>], start_digit: u32) -> u32 {
     res
 }
 
+fn code_part2(instructions_list: &[Vec<Instruction>], start_character: char) -> String {
+    let mut current_character = start_character;
+    let mut res = String::new();
+    for line in instructions_list {
+        for instruction in line {
+            current_character = instruction.next_character(current_character);
+        }
+        res.push(current_character);
+    }
+    res
+}
+
 fn day02_part1(example: &[Vec<Instruction>], input: &[Vec<Instruction>]) {
     // Exemple tests
-    assert_eq!(code(example, 5), 1985);
+    assert_eq!(code_part1(example, 5), 1985);
 
     // Solve puzzle
-    let res = code(input, 5);
+    let res = code_part1(input, 5);
     println!("Result part 1: {res}");
     assert_eq!(res, 78985);
     println!("> DAY02 - part 1: OK!");
 }
 
-fn day02_part2(_example: &[Vec<Instruction>], _input: &[Vec<Instruction>]) {
-    println!("TODO - part2");
+fn day02_part2(example: &[Vec<Instruction>], input: &[Vec<Instruction>]) {
     // Exemple tests
-    // assert_eq!(, 0);
+    assert_eq!(code_part2(example, '5'), "5DB3".to_string());
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY02 - part 2: OK!");
+    let res = code_part2(input, '5');
+    println!("Result part 2: {res}");
+    assert_eq!(res, "57DD8".to_string());
+    println!("> DAY02 - part 2: OK!");
 }
