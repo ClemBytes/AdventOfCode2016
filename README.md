@@ -55,6 +55,6 @@ cargo test --release -- --nocapture dayXX
 I'm solving the problems at my own pace and may refactor as I go.  
 
 Progress so far:  
+⭐⭐⭐☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆   
 ⭐⭐☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆   
-⭐⭐☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆   
-**4 / 50 stars**
+**5 / 50 stars**
