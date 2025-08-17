@@ -217,11 +217,11 @@ fn day02_part1(example: &[Vec<Instruction>], input: &[Vec<Instruction>]) {
 
 fn day02_part2(example: &[Vec<Instruction>], input: &[Vec<Instruction>]) {
     // Exemple tests
-    assert_eq!(code_part2(example, '5'), "5DB3".to_string());
+    assert_eq!(code_part2(example, '5'), "5DB3");
 
     // Solve puzzle
     let res = code_part2(input, '5');
     println!("Result part 2: {res}");
-    assert_eq!(res, "57DD8".to_string());
+    assert_eq!(res, "57DD8");
     println!("> DAY02 - part 2: OK!");
 }
