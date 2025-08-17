@@ -16,15 +16,15 @@ pub fn run() {
 
 #[derive(Debug, Copy, Clone)]
 enum Turn {
-    R,
-    L,
+    Right,
+    Left,
 }
 
 impl Turn {
     fn from_char(ch: char) -> Self {
         match ch {
-            'R' => Turn::R,
-            'L' => Turn::L,
+            'R' => Turn::Right,
+            'L' => Turn::Left,
             other => panic!("Unkwnow Turn '{other}'! Should be 'R' or 'L'."),
         }
     }
@@ -38,11 +38,13 @@ struct Instruction {
 
 fn parse(raw_input: &str) -> Vec<Instruction> {
     let raw_instructions: Vec<&str> = raw_input.trim().split(", ").collect();
-    let mut instructions: Vec<Instruction> = vec![];
+    let mut instructions = vec![];
     for instruction in raw_instructions {
-        let turn = instruction.chars().collect::<Vec<char>>()[0];
-        let turn = Turn::from_char(turn);
-        let nb_blocks = instruction[1..].to_string().parse().unwrap();
+        let mut chars = instruction.chars();
+        let first_char = chars.next().unwrap();
+        let rest: String = chars.collect();
+        let turn = Turn::from_char(first_char);
+        let nb_blocks = rest.parse().unwrap();
         instructions.push(Instruction { turn, nb_blocks });
     }
     instructions
@@ -65,18 +67,18 @@ struct State {
 
 impl State {
     fn turn(&mut self, t: Turn) {
-        match t {
-            Turn::R => match self.facing {
-                Facing::North => self.facing = Facing::East,
-                Facing::East => self.facing = Facing::South,
-                Facing::South => self.facing = Facing::West,
-                Facing::West => self.facing = Facing::North,
+        self.facing = match t {
+            Turn::Right => match self.facing {
+                Facing::North => Facing::East,
+                Facing::East => Facing::South,
+                Facing::South => Facing::West,
+                Facing::West => Facing::North,
             },
-            Turn::L => match self.facing {
-                Facing::North => self.facing = Facing::West,
-                Facing::West => self.facing = Facing::South,
-                Facing::South => self.facing = Facing::East,
-                Facing::East => self.facing = Facing::North,
+            Turn::Left => match self.facing {
+                Facing::North => Facing::West,
+                Facing::West => Facing::South,
+                Facing::South => Facing::East,
+                Facing::East => Facing::North,
             },
         }
     }
@@ -91,7 +93,7 @@ impl State {
     }
 }
 
-fn blocks_away(instructions: &Vec<Instruction>) -> i32 {
+fn blocks_away(instructions: &[Instruction]) -> i32 {
     let mut state = State {
         facing: Facing::North,
         n_s_coord: 0,
@@ -106,49 +108,49 @@ fn blocks_away(instructions: &Vec<Instruction>) -> i32 {
     state.n_s_coord.abs() + state.e_w_coord.abs()
 }
 
-fn day01_part1(input: &Vec<Instruction>) {
+fn day01_part1(input: &[Instruction]) {
     // Exemple tests
-    let ex: Vec<Instruction> = vec![
+    let ex = [
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 2,
         },
         Instruction {
-            turn: Turn::L,
+            turn: Turn::Left,
             nb_blocks: 3,
         },
     ];
     assert_eq!(blocks_away(&ex), 5);
-    let ex: Vec<Instruction> = vec![
+    let ex = [
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 2,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 2,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 2,
         },
     ];
     assert_eq!(blocks_away(&ex), 2);
-    let ex: Vec<Instruction> = vec![
+    let ex = [
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 5,
         },
         Instruction {
-            turn: Turn::L,
+            turn: Turn::Left,
             nb_blocks: 5,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 5,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 3,
         },
     ];
@@ -161,7 +163,7 @@ fn day01_part1(input: &Vec<Instruction>) {
     println!("> DAY01 - part 1: OK!");
 }
 
-fn visit_twice(instructions: &Vec<Instruction>) -> i32 {
+fn visit_twice(instructions: &[Instruction]) -> i32 {
     let mut visited_states: HashSet<(i32, i32)> = HashSet::new();
 
     let mut state = State {
@@ -184,23 +186,23 @@ fn visit_twice(instructions: &Vec<Instruction>) -> i32 {
     unreachable!();
 }
 
-fn day01_part2(input: &Vec<Instruction>) {
+fn day01_part2(input: &[Instruction]) {
     // Exemple tests
-    let ex: Vec<Instruction> = vec![
+    let ex = [
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 8,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 4,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 4,
         },
         Instruction {
-            turn: Turn::R,
+            turn: Turn::Right,
             nb_blocks: 8,
         },
     ];
