@@ -15,7 +15,7 @@ pub fn run() {
     let input = parse(&input);
 
     day04_part1(&example, &input);
-    day04_part2(&example, &input);
+    day04_part2(&input);
 }
 
 #[derive(Debug, Clone)]
@@ -24,6 +24,8 @@ struct Room {
     sector_id: u32,
     checksum: String,
 }
+
+const ALPHABET: &str = "abcdefghijklmnopqrstuvwxyz";
 
 impl Room {
     fn from_str(raw_input_line: &str) -> Self {
@@ -68,6 +70,38 @@ impl Room {
         }
         sum
     }
+
+    fn real_name(&self, alphabet: &[char]) -> String {
+        let mut real_name_string = String::new();
+        for ch in self.name.chars() {
+            if ch == '-' {
+                real_name_string.push(ch);
+            } else {
+                real_name_string.push(
+                    alphabet[(self.sector_id as usize
+                        + alphabet.iter().position(|&x| x == ch).unwrap())
+                        % 26],
+                );
+            }
+        }
+        real_name_string
+    }
+
+    fn get_plausible_rooms(rooms: &Vec<Self>) -> u32 {
+        let alphabet: Vec<char> = ALPHABET.chars().collect();
+        for room in rooms {
+            if !room.is_real() {
+                continue;
+            } else {
+                let real_name_string = room.real_name(&alphabet);
+                if real_name_string.contains("north") {
+                    println!("{} | {}", real_name_string, room.sector_id);
+                    return room.sector_id;
+                }
+            }
+        }
+        unreachable!();
+    }
 }
 
 fn parse(raw_input: &str) -> Vec<Room> {
@@ -89,14 +123,21 @@ fn day04_part1(example: &Vec<Room>, input: &Vec<Room>) {
     println!("> DAY04 - part 1: OK!");
 }
 
-fn day04_part2(_example: &Vec<Room>, _input: &Vec<Room>) {
-    println!("TODO - part2");
+fn day04_part2(input: &Vec<Room>) {
     // Exemple tests
-    // assert_eq!(, 0);
+    let ex = Room {
+        name: "qzmt-zixmtkozy-ivhz".to_string(),
+        sector_id: 343,
+        checksum: "zimth".to_string(),
+    };
+    assert_eq!(
+        ex.real_name(&ALPHABET.chars().collect::<Vec<char>>()),
+        "very-encrypted-name"
+    );
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY04 - part 2: OK!");
+    let res = Room::get_plausible_rooms(input);
+    println!("Result part 2: {res}");
+    assert_eq!(res, 482);
+    println!("> DAY04 - part 2: OK!");
 }
