@@ -72,7 +72,7 @@ fn day03_part1(input: &[[u32; 3]]) {
     assert!(!constructible(&[5, 10, 25]));
 
     // Solve puzzle
-    let res = input.into_iter().copied().filter(constructible).count();
+    let res = input.iter().copied().filter(constructible).count();
     println!("Result part 1: {res}");
     assert_eq!(res, 1050);
     println!("> DAY03 - part 1: OK!");
@@ -80,11 +80,11 @@ fn day03_part1(input: &[[u32; 3]]) {
 
 fn day03_part2(example: &[[u32; 3]], input: &[[u32; 3]]) {
     // Exemple tests
-    let res = example.into_iter().copied().filter(constructible).count();
+    let res = example.iter().copied().filter(constructible).count();
     assert_eq!(res, 6);
 
     // Solve puzzle
-    let res = input.into_iter().copied().filter(constructible).count();
+    let res = input.iter().copied().filter(constructible).count();
     println!("Result part 2: {res}");
     assert_eq!(res, 1921);
     println!("> DAY03 - part 2: OK!");

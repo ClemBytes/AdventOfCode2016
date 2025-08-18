@@ -53,8 +53,8 @@ impl Room {
             return false;
         }
         let mut computed_checksum = String::new();
-        for i in 0..5 {
-            computed_checksum.push(count_letters_as_tuples[i].1);
+        for tup in count_letters_as_tuples.iter().take(5) {
+            computed_checksum.push(tup.1);
         }
         computed_checksum == self.checksum
     }
