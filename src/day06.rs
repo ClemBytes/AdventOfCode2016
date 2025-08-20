@@ -24,7 +24,7 @@ fn parse(raw_input: &str) -> Vec<&str> {
     messages
 }
 
-fn error_corrected_message(input: &Vec<&str>) -> String {
+fn error_corrected_message(input: &Vec<&str>, part2: bool) -> String {
     let mut columns: Vec<HashMap<char, u32>> = vec![];
     // Init
     for _ in 0..input[0].len() {
@@ -47,31 +47,35 @@ fn error_corrected_message(input: &Vec<&str>) -> String {
             column_as_vec.push((count, letter));
             column_as_vec.sort();
         }
-        corrected_message.push(column_as_vec[column_as_vec.len() - 1].1);
+        let final_index = match part2 {
+            false => column_as_vec.len() - 1,
+            true => 0,
+        };
+        corrected_message.push(column_as_vec[final_index].1);
     }
     corrected_message
 }
 
 fn day06_part1(example: &Vec<&str>, input: &Vec<&str>) {
     // Exemple tests
-    let res = error_corrected_message(example);
+    let res = error_corrected_message(example, false);
     assert_eq!(res, "easter");
 
     // Solve puzzle
-    let res = error_corrected_message(input);
+    let res = error_corrected_message(input, false);
     println!("Result part 1: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY06 - part 1: OK!");
+    assert_eq!(res, "zcreqgiv");
+    println!("> DAY06 - part 1: OK!");
 }
 
-fn day06_part2(_example: &Vec<&str>, _input: &Vec<&str>) {
-    println!("TODO - part2");
+fn day06_part2(example: &Vec<&str>, input: &Vec<&str>) {
     // Exemple tests
-    // assert_eq!(, 0);
+    let res = error_corrected_message(example, true);
+    assert_eq!(res, "advent");
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY06 - part 2: OK!");
+    let res = error_corrected_message(input, true);
+    println!("Result part 2: {res}");
+    assert_eq!(res, "pljvorrk");
+    println!("> DAY06 - part 2: OK!");
 }
