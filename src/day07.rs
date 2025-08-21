@@ -7,13 +7,15 @@ fn test() {
 
 pub fn run() {
     println!("------- DAY07 -------");
-    let example = fs::read_to_string("inputs/example_day07").expect("Unable to read input!");
-    let example = parse(&example);
+    let example1 = fs::read_to_string("inputs/example_day07_1").expect("Unable to read input!");
+    let example1 = parse(&example1);
+    let example2 = fs::read_to_string("inputs/example_day07_2").expect("Unable to read input!");
+    let example2 = parse(&example2);
     let input = fs::read_to_string("inputs/input_day07").expect("Unable to read input!");
     let input = parse(&input);
 
-    day07_part1(&example, &input);
-    day07_part2(&example, &input);
+    day07_part1(&example1, &input);
+    day07_part2(&example2, &input);
 }
 
 #[derive(Debug, Clone)]
@@ -38,6 +40,39 @@ impl Block {
         }
         false
     }
+
+    fn get_aba(&self) -> Option<Vec<(char, char)>> {
+        let mut abas = vec![];
+        let mut first_char = self.sequence.chars().nth(0).unwrap();
+        let mut second_char = self.sequence.chars().nth(1).unwrap();
+        for i in 2..self.sequence.len() {
+            if first_char != second_char && self.sequence.chars().nth(i).unwrap() == first_char {
+                abas.push((first_char, second_char));
+            }
+            first_char = second_char;
+            second_char = self.sequence.chars().nth(i).unwrap();
+        }
+        if abas.len() > 0 {
+            return Some(abas);
+        } else {
+            return None;
+        }
+    }
+
+    fn find_bab(&self, abas: Vec<(char, char)>) -> bool {
+        for aba in abas {
+            let (a, b) = aba;
+            for i in 2..self.sequence.len() {
+                if self.sequence.chars().nth(i - 2).unwrap() == b
+                    && self.sequence.chars().nth(i - 1).unwrap() == a
+                    && self.sequence.chars().nth(i).unwrap() == b
+                {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -57,6 +92,28 @@ impl Address {
             }
         }
         res
+    }
+
+    fn supports_ssl(&self) -> bool {
+        // First search an aba
+        for outside_brackets_block in self.blocks.iter() {
+            if !outside_brackets_block.within_brackets {
+                match outside_brackets_block.get_aba() {
+                    Some(abas) => {
+                        // There are abas, so we look for a bab for each:
+                        for inside_brackets_block in self.blocks.iter() {
+                            if inside_brackets_block.within_brackets {
+                                if inside_brackets_block.find_bab(abas.clone()) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    None => {}
+                }
+            }
+        }
+        false
     }
 }
 
@@ -115,14 +172,25 @@ fn day07_part1(example: &Vec<Address>, input: &Vec<Address>) {
     // println!("> DAY07 - part 1: OK!");
 }
 
-fn day07_part2(_example: &Vec<Address>, _input: &Vec<Address>) {
-    println!("TODO - part2");
+fn day07_part2(example: &Vec<Address>, input: &Vec<Address>) {
     // Exemple tests
-    // assert_eq!(, 0);
+    let mut res = 0;
+    for address in example {
+        println!("{}", address.supports_ssl());
+        if address.supports_ssl() {
+            res += 1;
+        }
+    }
+    assert_eq!(res, 3);
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
+    let mut res = 0;
+    for address in input {
+        if address.supports_ssl() {
+            res += 1;
+        }
+    }
+    println!("Result part 2: {res}");
     // assert_eq!(res, );
     // println!("> DAY07 - part 2: OK!");
 }
