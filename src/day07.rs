@@ -52,11 +52,7 @@ impl Block {
             first_char = second_char;
             second_char = self.sequence.chars().nth(i).unwrap();
         }
-        if abas.len() > 0 {
-            return Some(abas);
-        } else {
-            return None;
-        }
+        if !abas.is_empty() { Some(abas) } else { None }
     }
 
     fn find_bab(&self, abas: Vec<(char, char)>) -> bool {
@@ -97,19 +93,16 @@ impl Address {
     fn supports_ssl(&self) -> bool {
         // First search an aba
         for outside_brackets_block in self.blocks.iter() {
-            if !outside_brackets_block.within_brackets {
-                match outside_brackets_block.get_aba() {
-                    Some(abas) => {
-                        // There are abas, so we look for a bab for each:
-                        for inside_brackets_block in self.blocks.iter() {
-                            if inside_brackets_block.within_brackets {
-                                if inside_brackets_block.find_bab(abas.clone()) {
-                                    return true;
-                                }
-                            }
-                        }
+            if !outside_brackets_block.within_brackets
+                && let Some(abas) = outside_brackets_block.get_aba()
+            {
+                // There are abas, so we look for a bab for each:
+                for inside_brackets_block in self.blocks.iter() {
+                    if inside_brackets_block.within_brackets
+                        && inside_brackets_block.find_bab(abas.clone())
+                    {
+                        return true;
                     }
-                    None => {}
                 }
             }
         }
@@ -176,7 +169,6 @@ fn day07_part2(example: &Vec<Address>, input: &Vec<Address>) {
     // Exemple tests
     let mut res = 0;
     for address in example {
-        println!("{}", address.supports_ssl());
         if address.supports_ssl() {
             res += 1;
         }
@@ -191,6 +183,6 @@ fn day07_part2(example: &Vec<Address>, input: &Vec<Address>) {
         }
     }
     println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY07 - part 2: OK!");
+    assert_eq!(res, 242);
+    println!("> DAY07 - part 2: OK!");
 }
