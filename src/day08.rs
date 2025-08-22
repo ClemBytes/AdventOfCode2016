@@ -14,8 +14,7 @@ pub fn run() {
     let input = fs::read_to_string("inputs/input_day08").expect("Unable to read input!");
     let input = Instruction::parse(&input);
 
-    day08_part1(&example, &input);
-    day08_part2(&example, &input);
+    day08(&example, &input);
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -117,7 +116,7 @@ fn initiate_grid(nb_rows: usize, nb_cols: usize) -> Vec<Vec<bool>> {
     vec![vec![false; nb_cols]; nb_rows]
 }
 
-fn _print_grid(grid: &Vec<Vec<bool>>) {
+fn print_grid(grid: &Vec<Vec<bool>>) {
     for row in grid {
         let mut new_row = String::new();
         for pos in row {
@@ -144,7 +143,7 @@ fn count_lit(grid: &Vec<Vec<bool>>) -> u32 {
     s
 }
 
-fn day08_part1(example: &Vec<Instruction>, input: &Vec<Instruction>) {
+fn day08(example: &Vec<Instruction>, input: &Vec<Instruction>) {
     let mut grid = initiate_grid(3, 7);
     for instruction in example {
         instruction.apply(&mut grid);
@@ -163,16 +162,7 @@ fn day08_part1(example: &Vec<Instruction>, input: &Vec<Instruction>) {
     println!("Result part 1: {res}");
     assert_eq!(res, 121);
     println!("> DAY08 - part 1: OK!");
-}
-
-fn day08_part2(_example: &Vec<Instruction>, _input: &Vec<Instruction>) {
-    println!("TODO - part2");
-    // Exemple tests
-    // assert_eq!(, 0);
-
-    // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY08 - part 2: OK!");
+    println!("Result part 2:");
+    print_grid(&grid);
+    println!("> DAY08 - part 2: OK! (RURUCEOEIL)");
 }
