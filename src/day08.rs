@@ -27,13 +27,13 @@ enum RotationOn {
 #[derive(Debug, Clone, Copy)]
 struct Rotation {
     on: RotationOn,
-    id: u32,
-    shift: u32,
+    id: usize,
+    shift: usize,
 }
 
 #[derive(Debug, Clone, Copy)]
 enum Instruction {
-    Rect(u32, u32),
+    Rect(usize, usize),
     Rotate(Rotation),
 }
 
@@ -52,7 +52,7 @@ impl Instruction {
                         matches[1].parse().unwrap(),
                         matches[2].parse().unwrap(),
                     ));
-                },
+                }
                 "rotate" => {
                     let (on, infos_rotation) = infos.split_once(" ").unwrap();
                     match on {
@@ -63,7 +63,7 @@ impl Instruction {
                                 id: matches[1].parse().unwrap(),
                                 shift: matches[2].parse().unwrap(),
                             }));
-                        },
+                        }
                         "row" => {
                             let matches = re_rotate_row.captures(infos_rotation).unwrap();
                             instructions.push(Instruction::Rotate(Rotation {
@@ -71,28 +71,98 @@ impl Instruction {
                                 id: matches[1].parse().unwrap(),
                                 shift: matches[2].parse().unwrap(),
                             }));
-                        },
-                        _ => panic!("Unknown rotation: {on} ({infos_rotation})")
+                        }
+                        _ => panic!("Unknown rotation: {on} ({infos_rotation})"),
                     }
-                },
+                }
                 _ => panic!("Unknown instruction: {kind} ({infos})"),
             }
         }
         instructions
     }
+
+    fn apply(&self, grid: &mut Vec<Vec<bool>>) {
+        let nb_rows = grid.len();
+        let nb_cols = grid[0].len();
+        match self {
+            Instruction::Rect(a, b) => {
+                for i in 0..*b {
+                    for j in 0..*a {
+                        grid[i][j] = true;
+                    }
+                }
+            }
+            Instruction::Rotate(infos) => match infos.on {
+                RotationOn::Column => {
+                    let mut column_to_rotate = vec![];
+                    for i in 0..nb_rows {
+                        column_to_rotate.push(grid[i][infos.id]);
+                    }
+                    for i in 0..nb_rows {
+                        grid[(i + infos.shift) % nb_rows][infos.id] = column_to_rotate[i];
+                    }
+                }
+                RotationOn::Row => {
+                    let row_to_rotate = grid[infos.id].clone();
+                    for j in 0..nb_cols {
+                        grid[infos.id][(j + infos.shift) % nb_cols] = row_to_rotate[j];
+                    }
+                }
+            },
+        }
+    }
 }
 
+fn initiate_grid(nb_rows: usize, nb_cols: usize) -> Vec<Vec<bool>> {
+    vec![vec![false; nb_cols]; nb_rows]
+}
 
-fn day08_part1(example: &Vec<Instruction>, _input: &Vec<Instruction>) {
-    println!("{example:#?}");
+fn _print_grid(grid: &Vec<Vec<bool>>) {
+    for row in grid {
+        let mut new_row = String::new();
+        for pos in row {
+            if *pos {
+                new_row.push('#');
+            } else {
+                new_row.push('.');
+            }
+        }
+        println!("{new_row}");
+        new_row.clear();
+    }
+}
+
+fn count_lit(grid: &Vec<Vec<bool>>) -> u32 {
+    let mut s = 0;
+    for row in grid {
+        for pos in row {
+            if *pos {
+                s += 1;
+            }
+        }
+    }
+    s
+}
+
+fn day08_part1(example: &Vec<Instruction>, input: &Vec<Instruction>) {
+    let mut grid = initiate_grid(3, 7);
+    for instruction in example {
+        instruction.apply(&mut grid);
+        // print_grid(&grid);
+        // println!();
+    }
     // Exemple tests
-    // assert_eq!(, 0);
+    assert_eq!(count_lit(&grid), 6);
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 1: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY08 - part 1: OK!");
+    let mut grid = initiate_grid(6, 50);
+    for instruction in input {
+        instruction.apply(&mut grid);
+    }
+    let res = count_lit(&grid);
+    println!("Result part 1: {res}");
+    assert_eq!(res, 121);
+    println!("> DAY08 - part 1: OK!");
 }
 
 fn day08_part2(_example: &Vec<Instruction>, _input: &Vec<Instruction>) {
