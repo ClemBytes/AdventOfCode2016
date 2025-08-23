@@ -19,43 +19,22 @@ fn decompress(input: &str, print: bool) -> usize {
     let mut i = 0;
     let input_chars: Vec<char> = input.chars().collect();
     while i < input_chars.len() {
-        let mut ch = input_chars[i];
+        let ch = input_chars[i];
         if ch == '(' {
-            let mut nb_chars = String::new();
             i += 1;
-            ch = input_chars[i];
-            while ch != 'x' {
-                nb_chars.push(ch);
-                i += 1;
-                ch = input_chars[i];
-            }
-            assert_eq!(ch, 'x');
-            let nb_chars: usize = nb_chars.parse().unwrap();
-            let mut repeat = String::new();
+            let before = i;
+            i += input_chars[i..].iter().position(|x| *x == 'x').unwrap();
+            let nb_chars: usize = input[before..i].parse().unwrap();
             i += 1;
-            ch = input_chars[i];
-            while ch != ')' {
-                repeat.push(ch);
+            let before = i;
+            while input_chars[i] != ')' {
                 i += 1;
-                ch = input_chars[i];
             }
-            assert_eq!(ch, ')');
-            let repeat: usize = repeat.parse().unwrap();
-            let mut to_add = String::new();
-            for _ in 0..nb_chars {
-                i += 1;
-                ch = input_chars[i];
-                to_add.push(ch);
-            }
+            let repeat: usize = input[before..i].parse().unwrap();
             for _ in 0..repeat {
-                for ch_add in to_add.chars() {
-                    assert_ne!(ch, ' ');
-                    if ch != ' ' {
-                        decompressed_string.push(ch_add);
-                    }
-                }
+                decompressed_string.push_str(&input[i..i + nb_chars]);
             }
-            i += 1;
+            i += nb_chars + 1;
         } else {
             assert_ne!(ch, ' ');
             if ch != ' ' {
@@ -129,8 +108,7 @@ fn decompress_v2(input: &[char]) -> usize {
         assert_eq!(ch, ')');
         let repeat: usize = repeat.parse().unwrap();
         i += 1;
-        repeat * decompress_v2(&input[i..i + nb_chars])
-            + decompress_v2(&input[i + nb_chars..])
+        repeat * decompress_v2(&input[i..i + nb_chars]) + decompress_v2(&input[i + nb_chars..])
     } else {
         i += 1;
         1 + decompress_v2(&input[i..])
