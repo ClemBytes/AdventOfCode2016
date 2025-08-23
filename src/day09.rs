@@ -98,14 +98,66 @@ fn day09_part1(input: &str) {
     println!("> DAY09 - part 1: OK!");
 }
 
-fn day09_part2(_input: &str) {
-    println!("TODO - part2");
+fn decompress_v2(input: &[char]) -> usize {
+    if input.is_empty() {
+        return 0;
+    }
+    if input.len() == 1 {
+        return 1;
+    }
+    let mut i = 0;
+    let mut ch = input[i];
+    if ch == '(' {
+        let mut nb_chars = String::new();
+        i += 1;
+        ch = input[i];
+        while ch != 'x' {
+            nb_chars.push(ch);
+            i += 1;
+            ch = input[i];
+        }
+        assert_eq!(ch, 'x');
+        let nb_chars: usize = nb_chars.parse().unwrap();
+        let mut repeat = String::new();
+        i += 1;
+        ch = input[i];
+        while ch != ')' {
+            repeat.push(ch);
+            i += 1;
+            ch = input[i];
+        }
+        assert_eq!(ch, ')');
+        let repeat: usize = repeat.parse().unwrap();
+        i += 1;
+        repeat * decompress_v2(&input[i..i + nb_chars])
+            + decompress_v2(&input[i + nb_chars..])
+    } else {
+        i += 1;
+        1 + decompress_v2(&input[i..])
+    }
+}
+
+fn day09_part2(input: &str) {
     // Exemple tests
-    // assert_eq!(, 0);
+    let ex: Vec<char> = "(3x3)XYZ".chars().collect();
+    let res = decompress_v2(&ex);
+    assert_eq!(res, 9);
+    let ex: Vec<char> = "X(8x2)(3x3)ABCY".chars().collect();
+    let res = decompress_v2(&ex);
+    assert_eq!(res, 20);
+    let ex: Vec<char> = "(27x12)(20x12)(13x14)(7x10)(1x12)A".chars().collect();
+    let res = decompress_v2(&ex);
+    assert_eq!(res, 241920);
+    let ex: Vec<char> = "(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"
+        .chars()
+        .collect();
+    let res = decompress_v2(&ex);
+    assert_eq!(res, 445);
 
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY09 - part 2: OK!");
+    let input: Vec<char> = input.chars().collect();
+    let res = decompress_v2(&input);
+    println!("Result part 2: {res}");
+    assert_eq!(res, 10780403063);
+    println!("> DAY09 - part 2: OK!");
 }
