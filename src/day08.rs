@@ -82,7 +82,7 @@ impl Instruction {
 
     // Avoid having clippy making me replace my for loops by grid.iter_mut().take(…)
     #[allow(clippy::needless_range_loop)]
-    fn apply(&self, grid: &mut  [Vec<bool>]) {
+    fn apply(&self, grid: &mut [Vec<bool>]) {
         let nb_rows = grid.len();
         let nb_cols = grid[0].len();
         match self {
