@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashSet, VecDeque},
+    collections::HashSet,
     vec,
 };
 
@@ -9,13 +9,22 @@ fn test() {
 }
 
 pub fn run() {
+    /*
+    0 H
+    1 L
+    2 P
+    3 T
+    4 p
+    5 R
+    6 C
+     */
     println!("------- DAY11 -------");
     let mut example = Area {
         elevator: 0,
         floors: [
-            vec![Object::Microchip('H'), Object::Microchip('L')],
-            vec![Object::Generator('H')],
-            vec![Object::Generator('L')],
+            vec![Object::Microchip(0), Object::Microchip(1)],
+            vec![Object::Generator(0)],
+            vec![Object::Generator(1)],
             vec![],
         ],
     };
@@ -27,16 +36,16 @@ pub fn run() {
         elevator: 0,
         floors: [
             vec![
-                Object::Generator('P'),
-                Object::Generator('T'),
-                Object::Microchip('T'),
-                Object::Generator('p'),
-                Object::Generator('R'),
-                Object::Microchip('R'),
-                Object::Generator('C'),
-                Object::Microchip('C'),
+                Object::Generator(2),
+                Object::Generator(3),
+                Object::Microchip(3),
+                Object::Generator(4),
+                Object::Generator(5),
+                Object::Microchip(5),
+                Object::Generator(6),
+                Object::Microchip(6),
             ],
-            vec![Object::Microchip('P'), Object::Microchip('p')],
+            vec![Object::Microchip(2), Object::Microchip(4)],
             vec![],
             vec![],
         ],
@@ -52,8 +61,8 @@ pub fn run() {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd)]
 enum Object {
-    Microchip(char),
-    Generator(char),
+    Microchip(u8),
+    Generator(u8),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -63,23 +72,22 @@ struct Area {
 }
 
 fn check_floor(floor: &Vec<Object>) -> bool {
-    let mut microchips: HashSet<char> = HashSet::new();
-    let mut generators: HashSet<char> = HashSet::new();
+    let mut microchips: u32 = 0;
+    let mut generators: u32 = 0;
     for object in floor {
         match object {
             Object::Microchip(element) => {
-                microchips.insert(*element);
+                microchips |= 2_u32.pow((*element).into());
             }
             Object::Generator(element) => {
-                generators.insert(*element);
+                generators |= 2_u32.pow((*element).into());
             }
         }
     }
     if microchips == generators {
         return true;
     }
-    if microchips.difference(&generators).next().is_none()
-        || generators.difference(&microchips).next().is_none()
+    if microchips & !generators == 0 || generators & !microchips == 0
     {
         return true;
     }
@@ -104,12 +112,18 @@ fn temp() {
 */
 
 fn move_floor(
-    current_nb_steps: u32,
     current_area: &Area,
-    q: &mut VecDeque<(u32, Area)>,
+    q: &mut Vec<Area>,
     from: usize,
     to: usize,
 ) {
+    // Max elevator capacity: 2 objects
+    // I can move :
+    // - 1 object
+    // - 2 microchips
+    // - 2 generator
+    // - 1 microchip + 1 generator ONLY if they are compatible
+
     // Try moving only one object:
     for (i, &object) in current_area.floors[from].iter().enumerate() {
         let mut next_area = current_area.clone();
@@ -118,7 +132,7 @@ fn move_floor(
         if check_floor(&current_area.floors[from]) && check_floor(&current_area.floors[to]) {
             next_area.floors[to].sort();
             next_area.elevator = to;
-            q.push_back((current_nb_steps + 1, next_area));
+            q.push(next_area);
         }
     }
 
@@ -143,7 +157,7 @@ fn move_floor(
                 next_area.floors[to].sort();
                 if check_floor(&next_area.floors[from]) && check_floor(&next_area.floors[to]) {
                     next_area.elevator = to;
-                    q.push_back((current_nb_steps + 1, next_area));
+                    q.push(next_area);
                 }
             }
         }
@@ -151,74 +165,215 @@ fn move_floor(
 }
 
 fn find_minimum_steps(input: Area) -> u32 {
-    let mut visited: HashSet<Area> = HashSet::new();
-    let mut q = VecDeque::new();
-    q.push_back((0, input));
-    'main_loop: while let Some(current) = q.pop_front() {
-        let (current_nb_steps, current_area) = current;
-        if visited.contains(&current_area) {
-            continue;
-        }
-        visited.insert(current_area.clone());
-
-        if current_area.floors[0].is_empty()
-            && current_area.floors[1].is_empty()
-            && current_area.floors[2].is_empty()
-        {
-            return current_nb_steps;
-        }
-        // If no object on elevator floor => impossible, continue
-        for f in 0..4 {
-            if current_area.elevator == f && current_area.floors[f].is_empty() {
-                continue 'main_loop;
-            }
-        }
-        // For each microchip at a given floor, I need to check if there is no generator that can fry it
-        if !check_floor(&current_area.floors[0])
-            || !check_floor(&current_area.floors[1])
-            || !check_floor(&current_area.floors[2])
-            || !check_floor(&current_area.floors[3])
-        {
-            continue;
-        }
-        // Max elevator capacity: 2 objects
-        // I can move :
-        // - 1 object
-        // - 2 microchips
-        // - 2 generator
-        // - 1 microchip + 1 generator ONLY if they are compatible
-        match current_area.elevator {
-            0 => {
-                // Move from for floor 0 to 1:
-                move_floor(current_nb_steps, &current_area, &mut q, 0, 1);
-            }
-            1 => {
-                // Move from for floor 1 to 0:
-                move_floor(current_nb_steps, &current_area, &mut q, 1, 0);
-                // Move from for floor 1 to 2:
-                move_floor(current_nb_steps, &current_area, &mut q, 1, 2);
-            }
-            2 => {
-                // Move from for floor 2 to 1:
-                move_floor(current_nb_steps, &current_area, &mut q, 2, 1);
-                // Move from for floor 2 to 3:
-                move_floor(current_nb_steps, &current_area, &mut q, 2, 3);
-            }
-            3 => {
-                // Move from for floor 3 to 2:
-                move_floor(current_nb_steps, &current_area, &mut q, 3, 2);
-            }
-            other => panic!("Unknown elevator floor: {other}"),
+    // Init
+    let mut visited_from_start: HashSet<Area> = HashSet::new();
+    let mut front_from_start = Vec::new();
+    let mut end_area = Area {
+        elevator: 3,
+        floors: [vec![], vec![], vec![], vec![]],
+    };
+    for f in &input.floors {
+        for object in f {
+            end_area.floors[3].push(object.clone());
         }
     }
-    unreachable!();
+    let mut visited_from_end: HashSet<Area> = HashSet::new();
+    let mut front_from_end = Vec::new();
+
+    // Start
+    front_from_start.push(input.clone());
+    front_from_end.push(end_area.clone());
+    let mut nb_steps_from_start = 0;
+    let mut nb_steps_from_end = 0;
+    loop {
+        // Go one step further from start
+        let mut next_front = vec![];
+        while let Some(current_from_start) = front_from_start.pop()
+        {
+            // Check already visited areas from start
+            if visited_from_start.contains(&current_from_start) {
+                continue;
+            }
+            visited_from_start.insert(current_from_start.clone());
+
+            // Check if current area from start has been seen from end
+            if visited_from_end.contains(&current_from_start) {
+                println!("A: nb_steps_from_start: {nb_steps_from_start} | nb_steps_from_end: {nb_steps_from_end}");
+                return nb_steps_from_start + nb_steps_from_end - 1;
+            }
+
+            // Check if find end
+            assert_ne!(current_from_start, end_area);
+
+            // If no object on elevator floor => impossible, continue
+            for f in 0..4 {
+                assert!(!(current_from_start.elevator == f && current_from_start.floors[f].is_empty()));
+            }
+
+            // For each microchip at a given floor, I need to check if there is no generator that can fry it
+            if !check_floor(&current_from_start.floors[0])
+                || !check_floor(&current_from_start.floors[1])
+                || !check_floor(&current_from_start.floors[2])
+                || !check_floor(&current_from_start.floors[3])
+            {
+                continue;
+            }
+
+            // Create next front
+            match current_from_start.elevator {
+                0 => {
+                    // Move from for floor 0 to 1:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        0,
+                        1,
+                    );
+                }
+                1 => {
+                    // Move from for floor 1 to 0:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        1,
+                        0,
+                    );
+                    // Move from for floor 1 to 2:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        1,
+                        2,
+                    );
+                }
+                2 => {
+                    // Move from for floor 2 to 1:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        2,
+                        1,
+                    );
+                    // Move from for floor 2 to 3:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        2,
+                        3,
+                    );
+                }
+                3 => {
+                    // Move from for floor 3 to 2:
+                    move_floor(
+                        &current_from_start,
+                        &mut next_front,
+                        3,
+                        2,
+                    );
+                }
+                other => panic!("Unknown elevator floor: {other}"),
+            }
+        }
+        nb_steps_from_start += 1;
+        front_from_start = next_front;
+
+        // Go one step before from end
+        let mut next_front = vec![];
+        while let Some(current_from_end) = front_from_end.pop()
+        {
+            // Check already visited areas from start
+            if visited_from_end.contains(&current_from_end) {
+                continue;
+            }
+            visited_from_end.insert(current_from_end.clone());
+
+            // Check if current area from start has been seen from end
+            if visited_from_start.contains(&current_from_end) {
+                println!("C: nb_steps_from_start: {nb_steps_from_start} | nb_steps_from_end: {nb_steps_from_end}");
+                return nb_steps_from_start + nb_steps_from_end - 1;
+            }
+
+            // Check if find start
+            assert_ne!(current_from_end, input);
+
+            // If no object on elevator floor => impossible, continue
+            for f in 0..4 {
+                assert!(!(current_from_end.elevator == f && current_from_end.floors[f].is_empty()));
+            }
+
+            // For each microchip at a given floor, I need to check if there is no generator that can fry it
+            if !check_floor(&current_from_end.floors[0])
+                || !check_floor(&current_from_end.floors[1])
+                || !check_floor(&current_from_end.floors[2])
+                || !check_floor(&current_from_end.floors[3])
+            {
+                continue;
+            }
+
+            // Create next front
+            match current_from_end.elevator {
+                0 => {
+                    // Move from for floor 0 to 1:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        0,
+                        1,
+                    );
+                }
+                1 => {
+                    // Move from for floor 1 to 0:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        1,
+                        0,
+                    );
+                    // Move from for floor 1 to 2:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        1,
+                        2,
+                    );
+                }
+                2 => {
+                    // Move from for floor 2 to 1:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        2,
+                        1,
+                    );
+                    // Move from for floor 2 to 3:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        2,
+                        3,
+                    );
+                }
+                3 => {
+                    // Move from for floor 3 to 2:
+                    move_floor(
+                        &current_from_end,
+                        &mut next_front,
+                        3,
+                        2,
+                    );
+                }
+                other => panic!("Unknown elevator floor: {other}"),
+            }
+        }
+        nb_steps_from_end += 1;
+        front_from_end = next_front;
+    }
 }
 
 fn day11_part1(example: Area, input: Area) {
     // Exemple tests
     // temp();
     let res = find_minimum_steps(example);
-    println!("Example OK");
     assert_eq!(res, 11);
 
     // Solve puzzle
