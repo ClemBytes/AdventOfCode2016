@@ -15,19 +15,19 @@ pub fn run() {
     let input = parse(&input);
 
     day10_part1(&example, &input);
-    day10_part2(&example, &input);
+    day10_part2(&input);
 }
 
 #[derive(Debug, Clone, Copy)]
 enum Destination {
-    Ouput(()),
+    Ouput(u32),
     Bot(u32),
 }
 
 impl Destination {
     fn from_str(str_dest: &str, id: u32) -> Self {
         match str_dest {
-            "output" => Destination::Ouput(()),
+            "output" => Destination::Ouput(id),
             "bot" => Destination::Bot(id),
             other => panic!("Unknown destination: {other}"),
         }
@@ -110,6 +110,55 @@ fn solve_part1(
     }
 }
 
+fn solve_part2(input: (HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>)) -> u32 {
+    let (mut bots, instructions) = input;
+    let mut output0 = 0;
+    let mut output1 = 0;
+    let mut output2 = 0;
+    loop {
+        if output0 * output1 * output2 != 0 {
+            return output0 * output1 * output2;
+        }
+        let (&id, microchips) = bots
+            .iter_mut()
+            .find(|(_, microchips)| microchips.len() == 2)
+            .unwrap();
+        microchips.sort();
+        let low_value = microchips.remove(0);
+        let high_value = microchips.remove(0);
+        match instructions[&id].low_to {
+            Destination::Ouput(other_id) => match other_id {
+                0 => output0 = low_value,
+                1 => output1 = low_value,
+                2 => output2 = low_value,
+                _ => {}
+            },
+            Destination::Bot(other_id) => {
+                if let Some(next_bot) = bots.get_mut(&other_id) {
+                    next_bot.push(low_value);
+                } else {
+                    bots.insert(other_id, vec![low_value]);
+                }
+            }
+        }
+        match instructions[&id].high_to {
+            Destination::Ouput(other_id) => match other_id {
+                0 => output0 = high_value,
+                1 => output1 = high_value,
+                2 => output2 = high_value,
+                _ => {}
+            },
+            Destination::Bot(other_id) => {
+                if let Some(next_bot) = bots.get_mut(&other_id) {
+                    next_bot.push(high_value);
+                } else {
+                    bots.insert(other_id, vec![high_value]);
+                }
+            }
+        }
+    }
+}
+
 fn day10_part1(
     example: &(HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>),
     input: &(HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>),
@@ -125,17 +174,10 @@ fn day10_part1(
     // println!("> DAY10 - part 1: OK!");
 }
 
-fn day10_part2(
-    _example: &(HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>),
-    _input: &(HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>),
-) {
-    println!("TODO - part2");
-    // Exemple tests
-    // assert_eq!(, 0);
-
+fn day10_part2(input: &(HashMap<u32, Vec<u32>>, HashMap<u32, Instruction>)) {
     // Solve puzzle
-    // let res =
-    // println!("Result part 2: {res}");
-    // assert_eq!(res, );
-    // println!("> DAY10 - part 2: OK!");
+    let res = solve_part2(input.clone());
+    println!("Result part 2: {res}");
+    assert_eq!(res, 12803);
+    println!("> DAY10 - part 2: OK!");
 }
